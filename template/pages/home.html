@@ -1,0 +1,25 @@
+{{define "content"}}
+<!-- <h3>This is the Heading</h3>
+    <p>this is the content</p> -->
+
+<h2>Home</h2>
+
+<h3>Looping through slice</h3>
+<ol>
+  <!-- to fetch key and value of slice -->
+  <!-- {{range $k, $v := .}}
+            <li>{{$k}}: {{$v}}</li>
+        {{end}} -->
+  {{range .hewan}}
+  <li>{{.}}</li>
+  {{end}}
+</ol>
+
+<h3>Looping through slice of struct</h3>
+<ol>
+  {{range .users}}
+  <li>{{.Name}}; email: {{.Email}}; age: {{.Age}}</li>
+  {{end}}
+</ol>
+
+{{end}}

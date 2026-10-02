@@ -1,0 +1,23 @@
+{{define "content"}}
+<h2>Product Page</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .products}}
+    <tr>
+      <td>{{.Name}}</td>
+      <td>{{.Price}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+
+<a class="button" href="/products/form">Add products</a>
+
+{{end}}
