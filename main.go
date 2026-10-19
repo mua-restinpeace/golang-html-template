@@ -105,6 +105,9 @@ func main() {
 	mux.HandleFunc("GET /products/{id}/edit", productEditHandler(db))
 	mux.HandleFunc("POST /products/{id}/edit", productUpdateHandler(db))
 
+	// delete
+	mux.HandleFunc("POST /products/{id}/hapus", productHardDeleteHandler(db))
+
 	http.ListenAndServe("localhost:8000", mux)
 }
 
@@ -169,7 +172,7 @@ func productEditHandler(db *sql.DB) http.HandlerFunc {
 			log.Fatal(err)
 		}
 		productForm := ProductForm{
-			Judul:  "Edit Products",
+			Judul:   "Edit Products",
 			Product: *product,
 		}
 		data := map[string]any{
@@ -184,7 +187,7 @@ func productEditHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func productUpdateHandler(db *sql.DB) http.HandlerFunc{
+func productUpdateHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
@@ -195,21 +198,21 @@ func productUpdateHandler(db *sql.DB) http.HandlerFunc{
 		var errors []string
 		idStr := r.PathValue("id")
 		id, err := strconv.Atoi(idStr)
-		if err !=nil {
+		if err != nil {
 			log.Fatal(err)
-			return 
+			return
 		}
 		name := r.PostFormValue("name")
 		priceStr := r.PostFormValue("price")
 		stockStr := r.PostFormValue("stock")
 
 		price, err := strconv.Atoi(priceStr)
-		if err != nil {
+		if err != nil || price <= 0 {
 			errors = append(errors, "invalid price input")
 		}
 
 		stock, err := strconv.Atoi(stockStr)
-		if err != nil {
+		if err != nil || stock <= 0 {
 			errors = append(errors, "invalid price input")
 		}
 
@@ -217,29 +220,30 @@ func productUpdateHandler(db *sql.DB) http.HandlerFunc{
 			errors = append(errors, "Name could not be empty")
 		}
 
+		product := Product{
+			ID:    id,
+			Name:  name,
+			Price: price,
+			Stock: stock,
+		}
+
 		if len(errors) > 0 {
+			productForm := ProductForm{
+				Judul: "Edit Products",
+				Product: product,
+				Errors:  errors,
+			}
+
 			data := map[string]any{
-				"Name":     name,
-				"Price":    price,
-				"PriceStr": priceStr,
-				"Stock":    stock,
-				"StockStr": stockStr,
-				"Errors":   errors,
+				"title":       "Products",
+				"ProductForm": productForm,
 			}
 
 			if err := tplProductForm.ExecuteTemplate(w, "layout", data); err != nil {
 				log.Printf("failed to load product form: %s\n", err.Error())
 				http.Error(w, "failed to load product form", http.StatusInternalServerError)
 			}
-
 			return
-		}
-
-		product := Product{
-			ID: id,
-			Name:  name,
-			Price: price,
-			Stock: stock,
 		}
 
 		_, err = updateProduct(r.Context(), db, product)
@@ -262,13 +266,13 @@ func productSimpanHandler(db *sql.DB) http.HandlerFunc {
 		stockStr := r.PostFormValue("stock")
 
 		price, err := strconv.Atoi(priceStr)
-		if err != nil {
+		if err != nil || price <= 0 {
 			errors = append(errors, "invalid price input")
 		}
 
 		stock, err := strconv.Atoi(stockStr)
-		if err != nil {
-			errors = append(errors, "invalid price input")
+		if err != nil || stock <= 0 {
+			errors = append(errors, "invalid stock input")
 		}
 
 		if strings.TrimSpace(name) == "" {
@@ -276,20 +280,26 @@ func productSimpanHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		if len(errors) > 0 {
+			productForm := ProductForm{
+				Judul:  "Add Products",
+				Action: "/products",
+				Product: Product{
+					Name:  name,
+					Price: price,
+					Stock: stock,
+				},
+				Errors: errors,
+			}
+
 			data := map[string]any{
-				"Name":     name,
-				"Price":    price,
-				"PriceStr": priceStr,
-				"Stock":    stock,
-				"StockStr": stockStr,
-				"Errors":   errors,
+				"title":       "Products",
+				"ProductForm": productForm,
 			}
 
 			if err := tplProductForm.ExecuteTemplate(w, "layout", data); err != nil {
 				log.Printf("failed to load product form: %s\n", err.Error())
 				http.Error(w, "failed to load product form", http.StatusInternalServerError)
 			}
-
 			return
 		}
 
@@ -300,6 +310,25 @@ func productSimpanHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		_, err = addProduct(r.Context(), db, product)
+		http.Redirect(w, r, "/products", http.StatusSeeOther)
+	}
+}
+
+func productHardDeleteHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			log.Fatal(nil)
+			return
+		}
+
+		deleteErr := deleteProduct(r.Context(), db, id)
+		if deleteErr != nil {
+			log.Fatal(deleteErr)
+			return
+		}
+
 		http.Redirect(w, r, "/products", http.StatusSeeOther)
 	}
 }
@@ -380,11 +409,23 @@ func updateProduct(ctx context.Context, db *sql.DB, p Product) (int64, error) {
 	UPDATE products set nama=?, harga=?, stok=?, keterangan=? WHERE id=?`
 
 	res, err := db.ExecContext(ctx, query, p.Name, p.Price, p.Stock, p.Description, p.ID)
-	if err != nil{
+	if err != nil {
 		log.Printf("updateProduct failed: %s\n", err)
 		return 0, err
 	}
 	rows, err := res.RowsAffected()
 
 	return rows, err
+}
+
+func deleteProduct(ctx context.Context, db *sql.DB, id int) error {
+	query := `
+	DELETE FROM products where id = ?`
+
+	_, err := db.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return err
 }
