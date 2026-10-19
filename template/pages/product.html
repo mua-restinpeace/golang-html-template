@@ -1,0 +1,32 @@
+{{define "content"}}
+<h2>Product Page</h2>
+
+<a class="button" href="/products/form">Add products</a>
+<br>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .products}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.Name}}</td>
+      <td>{{.Price}}</td>
+      <td>{{.Stock}}</td>
+      <td>
+        <a href="/products/{{.ID}}/edit">Edit</a>
+        <form action="/products/{{.ID}}/hapus" onsubmit=""></form>
+      </td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+
+{{end}}

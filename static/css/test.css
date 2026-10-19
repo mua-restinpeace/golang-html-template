@@ -1,0 +1,33 @@
+:root {
+  --primary: #3a8aff;
+  --on-primary: #fdfeff;
+  --text: #12121b;
+  --fill: #f9fafc;
+  --border: #dadada;
+  --radius: 8px;
+  --sidebar-width: 240px;
+  --header-height: 64px;
+}
+
+.button {
+  width: fit-content;
+  inline-size: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 9px 16px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: var(--primary);
+  color: var(--on-primary);
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  text-decoration: none;
+}
