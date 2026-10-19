@@ -1,15 +1,14 @@
-{{define "content"}}
-{{with .ProductForm}}
+{{define "content"}} {{with .ProductForm}}
 <h2>{{.Judul}}</h2>
 {{if .Errors}}
 <div class="form-errors">
-    <strong>Please fix the following:</strong>
+  <strong>Please fix the following:</strong>
 
-    <ul>
-        {{range .Errors}}
-        <li>{{.}}</li>
-        {{end}}
-    </ul>
+  <ul>
+    {{range .Errors}}
+    <li>{{.}}</li>
+    {{end}}
+  </ul>
 </div>
 {{end}}
 <form action="{{.Action}}" method="POST">
@@ -24,5 +23,4 @@
   <br />
   <input class="button" type="submit" value="Submit" />
 </form>
-{{end}}
-{{end}}
+{{end}} {{end}}
