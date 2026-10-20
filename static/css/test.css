@@ -9,7 +9,7 @@
   --header-height: 64px;
 }
 
-.button {
+/* .button {
   width: fit-content;
   inline-size: fit-content;
   display: flex;
@@ -30,4 +30,4 @@
 
   cursor: pointer;
   text-decoration: none;
-}
+} */

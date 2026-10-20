@@ -1,10 +1,15 @@
 {{define "content"}}
 
-<h2>Announcement</h2>
-{{if .is_kkm_oke}}
-    <p>You pass</p>
-{{else}}
-    <p>You fail, womp womp</p>
-{{end}}
+<div class="page-header">
+  <h2>Announcement</h2>
+</div>
+
+<section class="card">
+  {{if .is_kkm_oke}}
+  <p class="notice notice--success">You pass</p>
+  {{else}}
+  <p class="notice notice--fail">You fail, womp womp</p>
+  {{end}}
+</section>
 
 {{end}}

@@ -1,25 +1,25 @@
 {{define "layout"}}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{.title}} — Lova Store</title>
 
-    <link rel="stylesheet" href="/static/css/app.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body>
     {{template "header" .}}
 
     <div class="layout">
-        {{template "sidebar" .}}
+      {{template "sidebar" .}}
 
-        <main class="content">
-            {{template "content" .}}
-        </main>
+      <div class="main">
+        <main class="content">{{template "content" .}}</main>
 
         {{template "footer" .}}
+      </div>
     </div>
-</body>
+  </body>
 </html>
 {{end}}

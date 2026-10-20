@@ -1,9 +1,11 @@
 {{define "sidebar"}}
 <aside class="sidebar">
-    <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/products">Product</a></li>
-        <li><a href="/announcements">Announcements</a></li>
-    </ul>
+    <nav>
+        <ul>
+            <li><a href="/"{{if eq .title "Home"}} class="active" aria-current="page"{{end}}>Home</a></li>
+            <li><a href="/products"{{if eq .title "Products"}} class="active" aria-current="page"{{end}}>Product</a></li>
+            <li><a href="/announcements"{{if eq .title "Announcement"}} class="active" aria-current="page"{{end}}>Announcements</a></li>
+        </ul>
+    </nav>
 </aside>
 {{end}}

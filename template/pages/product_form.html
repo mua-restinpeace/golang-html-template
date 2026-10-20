@@ -1,6 +1,9 @@
-{{define "content"}} 
+{{define "content"}}
 {{with .ProductForm}}
-<h2>{{.Judul}}</h2>
+<div class="page-header">
+  <h2>{{.Judul}}</h2>
+</div>
+
 {{if .Errors}}
 <div class="form-errors">
   <strong>Please fix the following:</strong>
@@ -12,16 +15,27 @@
   </ul>
 </div>
 {{end}}
-<form action="{{.Action}}" method="POST">
-  <label for="name">Name</label>
-  <input type="text" name="name" value="{{.Product.Name}}" required />
-  <br />
-  <label for="price">Price</label>
-  <input type="number" name="price" value="{{.Product.Price}}" required />
-  <br />
-  <label for="stock">Stock</label>
-  <input type="number" name="stock" value="{{.Product.Stock}}" required />
-  <br />
-  <input class="button" type="submit" value="Submit" />
+
+<form class="form" action="{{.Action}}" method="POST">
+  <div class="field">
+    <label for="name">Name</label>
+    <input id="name" type="text" name="name" value="{{.Product.Name}}" required />
+  </div>
+
+  <div class="field">
+    <label for="price">Price</label>
+    <input id="price" type="number" name="price" value="{{.Product.Price}}" required />
+  </div>
+
+  <div class="field">
+    <label for="stock">Stock</label>
+    <input id="stock" type="number" name="stock" value="{{.Product.Stock}}" required />
+  </div>
+
+  <div class="form-actions">
+    <button class="button" type="submit">Submit</button>
+    <a class="button button--secondary" href="/products">Cancel</a>
+  </div>
 </form>
-{{end}} {{end}}
+{{end}}
+{{end}}
