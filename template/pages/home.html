@@ -13,7 +13,7 @@
     <!-- {{range $k, $v := .}}
               <li>{{$k}}: {{$v}}</li>
           {{end}} -->
-    {{range .hewan}}
+    {{range .Hewan}}
     <li>{{.}}</li>
     {{end}}
   </ol>
@@ -22,7 +22,7 @@
 <section class="card">
   <h3>Looping through slice of struct</h3>
   <ol>
-    {{range .users}}
+    {{range .Users}}
     <li>{{.Name}}; email: {{.Email}}; age: {{.Age}}</li>
     {{end}}
   </ol>

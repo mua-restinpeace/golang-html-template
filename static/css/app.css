@@ -1,9 +1,3 @@
-/* ==========================================================================
-   Lova Store — minimalist theme
-   Original palette kept (blue accent, near-black text, light fill, grey border).
-   New: a family of "black" tones used for buttons, active states and emphasis.
-   ========================================================================== */
-
 :root {
   /* original palette */
   --primary: #3a8aff;

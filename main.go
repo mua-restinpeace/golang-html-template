@@ -30,7 +30,7 @@ type Product struct {
 }
 
 type ProductForm struct {
-	Judul   string
+	Heading string
 	Action  string
 	Product Product
 	Errors  []string
@@ -106,17 +106,18 @@ func main() {
 	mux.HandleFunc("POST /products/{id}/edit", productUpdateHandler(db))
 
 	// delete
-	mux.HandleFunc("POST /products/{id}/hapus", productHardDeleteHandler(db))
+	mux.HandleFunc("POST /products/{id}/delete", productHardDeleteHandler(db))
+	mux.HandleFunc("POST /products/{id}/deactivate", productDeactivateHandler(db))
 
 	http.ListenAndServe("localhost:8000", mux)
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]any{
-		"title": "Home",
-		"judul": "Website Heading",
-		"hewan": []string{"shark", "whale", "dolphin"},
-		"users": UserData,
+		"Title":   "Home",
+		"Heading": "Website Heading",
+		"Hewan":   []string{"shark", "whale", "dolphin"},
+		"Users":   UserData,
 	}
 	if err := tplHome.ExecuteTemplate(w, "layout", data); err != nil {
 		log.Printf("failed to render Home: %s", err.Error())
@@ -133,8 +134,8 @@ func productHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		data := map[string]any{
-			"title":    "Products",
-			"products": products,
+			"Title":    "Products",
+			"Products": products,
 		}
 
 		if err := tplProduct.ExecuteTemplate(w, "layout", data); err != nil {
@@ -146,11 +147,11 @@ func productHandler(db *sql.DB) http.HandlerFunc {
 
 func productFormHandler(w http.ResponseWriter, r *http.Request) {
 	productForm := ProductForm{
-		Judul:  "Add Products",
-		Action: "/products",
+		Heading: "Add Products",
+		Action:  "/products",
 	}
 	data := map[string]any{
-		"title":       "Products",
+		"Title":       "Products",
 		"ProductForm": productForm,
 	}
 	if err := tplProductForm.ExecuteTemplate(w, "layout", data); err != nil {
@@ -172,11 +173,11 @@ func productEditHandler(db *sql.DB) http.HandlerFunc {
 			log.Fatal(err)
 		}
 		productForm := ProductForm{
-			Judul:   "Edit Products",
+			Heading: "Edit Products",
 			Product: *product,
 		}
 		data := map[string]any{
-			"title":       "Products",
+			"Title":       "Products",
 			"ProductForm": productForm,
 		}
 		if err := tplProductForm.ExecuteTemplate(w, "layout", data); err != nil {
@@ -229,13 +230,13 @@ func productUpdateHandler(db *sql.DB) http.HandlerFunc {
 
 		if len(errors) > 0 {
 			productForm := ProductForm{
-				Judul: "Edit Products",
+				Heading: "Edit Products",
 				Product: product,
 				Errors:  errors,
 			}
 
 			data := map[string]any{
-				"title":       "Products",
+				"Title":       "Products",
 				"ProductForm": productForm,
 			}
 
@@ -281,8 +282,8 @@ func productSimpanHandler(db *sql.DB) http.HandlerFunc {
 
 		if len(errors) > 0 {
 			productForm := ProductForm{
-				Judul:  "Add Products",
-				Action: "/products",
+				Heading: "Add Products",
+				Action:  "/products",
 				Product: Product{
 					Name:  name,
 					Price: price,
@@ -292,7 +293,7 @@ func productSimpanHandler(db *sql.DB) http.HandlerFunc {
 			}
 
 			data := map[string]any{
-				"title":       "Products",
+				"Title":       "Products",
 				"ProductForm": productForm,
 			}
 
@@ -319,7 +320,7 @@ func productHardDeleteHandler(db *sql.DB) http.HandlerFunc {
 		idStr := r.PathValue("id")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			log.Fatal(nil)
+			log.Fatal("invalid product id")
 			return
 		}
 
@@ -333,17 +334,35 @@ func productHardDeleteHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func announcementHandler(w http.ResponseWriter, r *http.Request) {
-	nilai := 90
-	is_kkm_oke := false
+func productDeactivateHandler(db  *sql.DB) http.HandlerFunc {
+	return  func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			log.Fatal("invalid product id")
+			return 
+		}
 
-	if nilai > 70 {
-		is_kkm_oke = true
+		res := deactivateProduct(r.Context(), db, id)
+		if res != nil {
+			log.Fatal("failed to deactivate product")
+			return 
+		}
+
+		http.Redirect(w, r, "/products", http.StatusSeeOther)
+	}
+}
+
+func announcementHandler(w http.ResponseWriter, r *http.Request) {
+	score := 90
+	is_pass := false
+
+	if score > 70 {
+		is_pass = true
 	}
 
 	data := map[string]any{
-		"title":      "Announcement",
-		"is_kkm_oke": is_kkm_oke,
+		"Title":      "Announcement",
+		"Is_pass": is_pass,
 	}
 	if err := tplAnnouncement.ExecuteTemplate(w, "layout", data); err != nil {
 		log.Printf("failed to render Announcement: %s", err.Error())
@@ -367,7 +386,7 @@ func getProductById(ctx context.Context, db *sql.DB, id int) (*Product, error) {
 
 func getAllProduct(ctx context.Context, db *sql.DB) ([]Product, error) {
 	query := `
-	SELECT id, nama, harga, stok FROM products ORDER BY id`
+	SELECT id, nama, harga, stok FROM products WHERE aktif = 1 ORDER BY id`
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -424,7 +443,19 @@ func deleteProduct(ctx context.Context, db *sql.DB, id int) error {
 
 	_, err := db.ExecContext(ctx, query, id)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("deleteProducts error: %s", err)
+	}
+
+	return err
+}
+
+func deactivateProduct(ctx context.Context, db *sql.DB, id int) error {
+	query := `
+	UPDATE products SET aktif = 0 where id = ?`
+
+	_, err := db.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Fatalf("deactivateProducts error: %s", err)
 	}
 
 	return err
